@@ -9,7 +9,7 @@ function NotEligible() {
 			<section className='py-[125px]'>
 				<div className='center-wr flex flex-col items-center'>
 					<figure>
-						<img src="/logo.png" width={240} alt="" />
+						<img src="/logo-updated.png" width={240} alt="" />
 					</figure>
 					<h1 className='text-[40px] font-semibold text-center'>We are sorry, you do not qualify at this time.</h1>
 					<div className='w-[75%]'>

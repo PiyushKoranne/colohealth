@@ -5,7 +5,7 @@ function Navbar() {
 		<nav className='navbar-wr'>
 			<div className='center-wr flex items-center justify-between  border-b-[4px] border-b-[#DEA52B]'>
 				<figure>
-					<img src="/logo.png" width={"200px"} alt="" />
+					<img src="/logo-updated.png" className='py-[10px]' alt="" />
 				</figure>
 				<div className=''>
 					<ul className='flex items-center justify-end gap-[27px] list-none py-[20px]'>
