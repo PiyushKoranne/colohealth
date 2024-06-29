@@ -1,18 +1,32 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from './common/Navbar'
 import Footer from './common/Footer'
-import { Calendar, Checkbox, Radio } from 'antd';
+import { Calendar, DatePicker, Checkbox, Radio, Badge } from 'antd';
 import { Formik } from 'formik';
-import { HostedForm } from 'react-acceptjs';
-import { FormComponent, FormContainer } from "react-authorize-net";
+import { AcceptHosted, HostedForm } from 'react-acceptjs';
 import axios from 'axios';
+import { ColorRing } from 'react-loader-spinner';
+import dayjs from 'dayjs';
+import { LuClock4 } from 'react-icons/lu';
+import toast, { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 
 function Home() {
+	const navigate = useNavigate();
 
 	const authData = {
 		apiLoginID: '5KP3u95bQpv',
 		clientKey: '346HZ32z3fP4hTG2',
 	};
+
+	const disabledDate = (current) => {
+		// Can not select days before today and weekends
+		return current && (current < dayjs().startOf('day') || current.day() === 0 || current.day() === 6);
+	};
+
+
 	const [preRegistrationForm, setPreRegistrationForm] = useState([
 		{
 			que: "Are you 50 years of age or older?(Required)",
@@ -41,17 +55,27 @@ function Home() {
 		},
 	]);
 
-
+	const [scheduledAt, setScheduledAt] = useState(() => dayjs(new Date()));
 	const [currentQ, setCurrentQ] = useState(0);
 	const [quizComplete, setQuizComplete] = useState(false);
 	const [quizError, setQuizError] = useState(false);
 	const [formToken, setFormToken] = useState('');
+	const [showPaymentBlock, setShowPaymentBlock] = useState(false);
+	const [blockedTimes, setBlockedTimes] = useState([]);
 
 	function reAttemptTest() {
 		setQuizComplete(false);
 		setCurrentQ(0);
 		setQuizError(false);
 	}
+	const handleSubmit = (response) => {
+		if (response.messages.resultCode === "Error") {
+			toast.error("Payment Failed.");
+		} else {
+			// Handle successful payment submission logic here
+			console.log('Payment submitted successfully');
+		}
+	};
 
 	async function getFormToken() {
 		const response = await axios.get("http://192.168.16.36:4001/colo-pay");
@@ -60,7 +84,16 @@ function Home() {
 		}
 	}
 
-	console.log("form token", formToken);
+	function cellRenderer(value) {
+
+		return (
+			<div className='flex justify-center items-center flex-col gap-[10px]'>
+				{ blockedTimes.indexOf(new Date(value).toDateString()) !== -1 ? <img src="/book-new-30.png" alt="" /> : new Date(value).toDateString() === new Date(scheduledAt).toDateString() ? <img src="/pin-30.png" alt="" /> : null}
+				{ blockedTimes.indexOf(new Date(value).toDateString()) !== -1 ? <div id='booked-calendar-item'>Booked</div> : new Date(value).toDateString() === new Date(scheduledAt).toDateString() ? <div>Selected</div> : null}
+			</div>
+		)
+	}
+
 
 	function setCurrentAnswer(ans) {
 		const index = currentQ;
@@ -75,24 +108,54 @@ function Home() {
 			});
 			return temp;
 		});
-		console.log("CURRENTLY", currentQ);
 		if (currentQ === 4) setQuizComplete(true);
 		setCurrentQ(prev => prev + 1);
 	}
 
-	const onPanelChange = (value, mode) => {
-		console.log(value.format('YYYY-MM-DD'), mode);
-	};
+	console.log("booked", blockedTimes);
+
+
+	async function handleSubmitTestForm(setSubmitting, values) {
+		try {
+			const response = await axios.post("http://192.168.16.36:4001/register-new-test-data", { ...values, scheduledAt });
+			if (response.status === 200) {
+				setShowPaymentBlock(true);
+			} else {
+				toast.error("Failed to register", { style: { backgroundColor: "#101010", color: "white" } })
+				console.log('not ok', response);
+			}
+			setSubmitting(false);
+		} catch (error) {
+			console.log(error);
+			setSubmitting(false);
+		}
+	}
+
+	async function getScheduledTimes() {
+		try {
+			const response = await axios.get("http://192.168.16.36:4001/get-scheduled-times");
+			if(response.status === 200) {
+				setBlockedTimes(response.data.blockedTimes.map(item => new Date(item).toDateString()));
+			} else {
+				console.log(response);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	}
+	// 
+	useEffect(()=> {
+		getScheduledTimes();
+	},[blockedTimes.length])
 
 	useEffect(() => {
 		if (quizComplete) {
-			// last question done, begin evaluation
 			const responseString = preRegistrationForm.map(item => item.ans).join("");
 			if (responseString !== 'yynnn') {
 				setQuizError(true);
 				setQuizComplete(true);
+				navigate("/not-eligible");
 			} else {
-				// display quix complete and edit option
 				setQuizComplete(true);
 			}
 		}
@@ -102,8 +165,13 @@ function Home() {
 		getFormToken();
 	}, [])
 
+
 	return (
 		<>
+			<Toaster
+				position="bottom-center"
+				reverseOrder={false}
+			/>
 			<Navbar />
 			<section className='py-[125px]'>
 				<div className='center-wr'>
@@ -194,8 +262,22 @@ function Home() {
 				<div className=' center-wr flex flex-col items-center justify-center pt-[50px] pb-[150px]'>
 					<div className='flex items-center justify-center w-full'>
 						<div className='w-[60%]'>
-							<h3 className='font-bold text-[16px]'>Pick a Date & Time</h3>
-							<Calendar fullscreen={true} onChange={onPanelChange} />
+							<h3 className='font-bold text-[16px] mb-[10px]'>Pick a Date & Time</h3>
+							<div className=' flex items-center'>
+								<DatePicker
+									className='w-full border-[1px] border-[rgba(0,0,0,0.2)]'
+									format="YYYY-MM-DD HH:mm:ss"
+									disabledDate={disabledDate}
+									// disabledTime={disabledDateTime}
+									showTime={{
+										defaultValue: dayjs('00:00:00', 'HH:mm:ss'),
+									}}
+									onChange={(date, datestring) => { setScheduledAt(date) }}
+								/>
+							</div>
+							<div className='mt-[10px] mb-[5px] p-[5px] bg-sky-100 px-[15px]' >Confirm <span className='font-medium'>{`${daysOfWeek[new Date(scheduledAt).getDay()]}, ${new Date(scheduledAt).toLocaleString()} `}</span> as your scheduled appointment time?</div>
+
+							<Calendar cellRender={cellRenderer} value={dayjs(scheduledAt)} fullscreen />
 						</div>
 					</div>
 				</div>
@@ -218,7 +300,7 @@ function Home() {
 					<div className='flex items-center justify-center w-full'>
 						<div className='w-[60%]'>
 							<Formik
-								initialValues={{ firstName: '', lastName: '', dob: '', streetAddress: "", city: '', state: '', zip: '', phone: '', email: '', race: 'American Indian', ethnicity: 'Hispanic/Latino' }}
+								initialValues={{ confirm: false, firstName: '', lastName: '', dob: '', streetAddress: "", city: '', state: '', zip: '', phone: '', email: '', race: 'American Indian', ethnicity: 'Hispanic/Latino' }}
 								validate={values => {
 									const errors = {};
 									if (!values.email) {
@@ -228,6 +310,7 @@ function Home() {
 									) {
 										errors.email = 'Invalid email address';
 									}
+									if (!values.confirm) errors.confirm = "Please consent to the registration by checking this field."
 									if (!values.firstName) errors.firstName = "Please enter your first name";
 									if (!values.lastName) errors.lastName = "Please enter your last name";
 									if (!values.dob) errors.dob = "Please enter your DoB";
@@ -243,8 +326,7 @@ function Home() {
 								}}
 								onSubmit={(values, { setSubmitting }) => {
 									setTimeout(() => {
-										console.log("here you go:", values);
-										setSubmitting(false);
+										handleSubmitTestForm(setSubmitting, values);
 									}, 400);
 								}}
 							>
@@ -256,6 +338,8 @@ function Home() {
 									handleBlur,
 									handleSubmit,
 									isSubmitting,
+									dirty,
+									setFieldValue,
 								}) => (
 									<form className='grid grid-cols-6 gap-3 gap-y-8' onSubmit={handleSubmit}>
 										{/* First Name */}
@@ -347,41 +431,47 @@ function Home() {
 												</Radio.Group>
 											</div>
 										</div>
+
+										<div className='col-span-6 relative'>
+											{((touched.confirm && errors.confirm)) && <figure className='error-arrow-hldr absolute left-[-140px] top-0 translate-y-[-25%]'>
+												<img src="/error-arrow.png" className='rotate-[-90deg]' alt="" />
+											</figure>}
+											<p className='font-normal text-[13px] mb-[10px]'>Your presonal data will be used to process your order, support your experience throughout this website, and for other purposes described in our <a className='text-red-600' href="">privacy policy</a>.</p>
+											<Checkbox name='confirm' onChange={(e) => { setFieldValue('confirm', e.target.checked) }}>Please check here to confirm that you have read and agree to our <a className='text-red-600' href="">terms and conditions (link opens in a new tab)*</a> </Checkbox>
+											{(touched.confirm && errors.confirm) && <p className='font-semibold text-red-600'>{errors.confirm}</p>}
+											<div className='flex items-center justify-end mt-[15px]'>
+												<button type='submit' className='leading-[50px] px-[30px] bg-[#202020] text-white' >{isSubmitting ? <ColorRing
+													visible={true}
+													height="45"
+													width="45"
+													ariaLabel="color-ring-loading"
+													wrapperStyle={{}}
+													wrapperClass="color-ring-wrapper"
+													colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
+												/> : 'Register'}</button>
+											</div>
+										</div>
 									</form>
 								)}
 							</Formik>
-							<div className='mt-[25px] flex items-center justify-end '>
-								{formToken ? (
-
+							<div className='mt-[35px] flex items-center justify-end w-full'>
+								{(showPaymentBlock && formToken) && (
 									<>
-										<div className='flex items-center justify-start flex-col bg-[#E8E7ED]'>
-											<div className='flex items-center gap-[10px] w-full py-[25px] pb-[25px] px-[35px]'>
+										<div className='flex items-center justify-start flex-col bg-[#E8E7ED] w-full'>
+											<div className='flex items-center gap-[10px] py-[25px] pb-[25px] px-[35px] w-full'>
 												<h3>Credit Card</h3>
 												<img src="/allcard.png" width={170} alt="" />
 											</div>
-											<div className='px-[35px]'>
-											<FormContainer
-												children={<h2>I am here</h2>}
-												environment="sandbox"
-												amount={23}
-												component={FormComponent}
-												clientKey={authData.clientKey}
-												apiLoginId={authData.apiLoginID}
-											/>
-											</div>
-											<div className='border-t-[1px] border-[rgba(0,0,0,0.3)] bg-[#E8E7ED] pt-[20px] px-[35px] pb-[35px]'>
-												<p className='font-normal text-[13px] mb-[10px]'>Your presonal data will be used to process your order, support your experience throughout this website, and for other purposes described in our <a className='text-red-600' href="">privacy policy</a>.</p>
-												<Checkbox onChange={() => { }}>Please check here to confirm that you have read and agree to our <a className='text-red-600' href="">terms and conditions (link opens in a new tab)*</a></Checkbox>
+											<div className='border-t-[1px] border-[rgba(0,0,0,0.3)] bg-[#E8E7ED] pt-[20px] px-[35px] pb-[35px] w-full'>
+												<p >Your presonal data will be used to process your order, support your experience throughout this website, and for other purposes described in our <a className='text-red-600' href="">privacy policy</a>.</p>
+												<p className='mt-[15px]'>Please enter your credit card details below to proceed with the payment securely.</p>
+
+												<div className='flex items-center justify-end'>
+													<HostedForm environment='SANDBOX' formHeaderText='Pay via Credit Card:' buttonText='Pay Now' paymentOptions={{ showCreditCard: true, showBankAccount: false }} buttonClassName='px-[30px] py-[12.5px] font-semibold border-2 border-black bg-[#DEA52B]' authData={authData} onSubmit={handleSubmit} />
+												</div>
 											</div>
 										</div>
-
 									</>
-
-								) : (
-									<div>
-										You must have a form token. Have you made a call to the
-										getHostedPaymentPageRequestAPI?
-									</div>
 								)}
 							</div>
 						</div>
