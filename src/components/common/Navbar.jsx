@@ -85,7 +85,7 @@ function Navbar() {
 							<Dropdown
 								menu={{
 									items,
-									onNavClick,
+									onClick: onNavClick,
 								}}
 							><FaRegUser /></Dropdown>
 						</li>}
