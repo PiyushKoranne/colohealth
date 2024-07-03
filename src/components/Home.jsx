@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from './common/Navbar'
 import Footer from './common/Footer'
-import { Calendar, DatePicker, Checkbox, Radio, Badge } from 'antd';
+import {  Checkbox, Radio, Badge } from 'antd';
+import { Calendar, DatePicker } from 'rsuite';
+import 'rsuite/Calendar/styles/index.css';
+import 'rsuite/DatePicker/styles/index.css';
 import { Formik } from 'formik';
 import { AcceptHosted, HostedForm } from 'react-acceptjs';
 import axios from 'axios';
@@ -10,6 +13,7 @@ import dayjs from 'dayjs';
 import { LuClock4 } from 'react-icons/lu';
 import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import ResponseBlock from './ResponseBlock';
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 
@@ -21,9 +25,11 @@ function Home() {
 		clientKey: '346HZ32z3fP4hTG2',
 	};
 
+
+	
 	const disabledDate = (current) => {
 		// Can not select days before today and weekends
-		return current && (current < dayjs().startOf('day') || current.day() === 0 || current.day() === 6);
+		return current && (current < dayjs().startOf('day') || current.getDay() === 0 || current.getDay() === 6);
 	};
 
 
@@ -55,27 +61,22 @@ function Home() {
 		},
 	]);
 
-	const [scheduledAt, setScheduledAt] = useState(() => dayjs(new Date()));
+	const [scheduledAt, setScheduledAt] = useState(new Date());
 	const [currentQ, setCurrentQ] = useState(0);
 	const [quizComplete, setQuizComplete] = useState(false);
 	const [quizError, setQuizError] = useState(false);
 	const [formToken, setFormToken] = useState('');
 	const [showPaymentBlock, setShowPaymentBlock] = useState(false);
 	const [blockedTimes, setBlockedTimes] = useState([]);
+	const [response, setResponse] = React.useState('');
+
 
 	function reAttemptTest() {
 		setQuizComplete(false);
 		setCurrentQ(0);
 		setQuizError(false);
 	}
-	const handleSubmit = (response) => {
-		if (response.messages.resultCode === "Error") {
-			toast.error("Payment Failed.");
-		} else {
-			// Handle successful payment submission logic here
-			console.log('Payment submitted successfully');
-		}
-	};
+
 
 	async function getFormToken() {
 		const response = await axios.get("http://192.168.16.36:4001/colo-pay");
@@ -85,11 +86,10 @@ function Home() {
 	}
 
 	function cellRenderer(value) {
-
 		return (
 			<div className='flex justify-center items-center flex-col gap-[10px]'>
-				{ blockedTimes.indexOf(new Date(value).toDateString()) !== -1 ? <img src="/book-new-30.png" alt="" /> : new Date(value).toDateString() === new Date(scheduledAt).toDateString() ? <img src="/pin-30.png" alt="" /> : null}
-				{ blockedTimes.indexOf(new Date(value).toDateString()) !== -1 ? <div id='booked-calendar-item'>Booked</div> : new Date(value).toDateString() === new Date(scheduledAt).toDateString() ? <div>Selected</div> : null}
+				{/* {blockedTimes.indexOf(new Date(value).toDateString()) !== -1 ? <img src="/book-new-30.png" alt="" /> : new Date(value).toDateString() === new Date(scheduledAt).toDateString() ? <img src="/pin-30.png" alt="" /> : null} */}
+				{blockedTimes.indexOf(new Date(value).toDateString()) !== -1 ? <div id='booked-calendar-item'>Booked</div> : new Date(value).toDateString() === new Date(scheduledAt).toDateString() ? <div className='text-[16px] mt-[20px]'>Selected</div> : null}
 			</div>
 		)
 	}
@@ -112,8 +112,6 @@ function Home() {
 		setCurrentQ(prev => prev + 1);
 	}
 
-	console.log("booked", blockedTimes);
-
 
 	async function handleSubmitTestForm(setSubmitting, values) {
 		try {
@@ -121,7 +119,7 @@ function Home() {
 			if (response.status === 200) {
 				setShowPaymentBlock(true);
 			} else {
-				toast.error("Failed to register", { style: { backgroundColor: "#101010", color: "white" } })
+				toast.error("Failed to register", { style: { backgroundColor: "#101010", color: "white" } });
 				console.log('not ok', response);
 			}
 			setSubmitting(false);
@@ -131,10 +129,11 @@ function Home() {
 		}
 	}
 
+
 	async function getScheduledTimes() {
 		try {
 			const response = await axios.get("http://192.168.16.36:4001/get-scheduled-times");
-			if(response.status === 200) {
+			if (response.status === 200) {
 				setBlockedTimes(response.data.blockedTimes.map(item => new Date(item).toDateString()));
 			} else {
 				console.log(response);
@@ -143,10 +142,10 @@ function Home() {
 			console.log(error);
 		}
 	}
-	// 
-	useEffect(()=> {
+
+	useEffect(() => {
 		getScheduledTimes();
-	},[blockedTimes.length])
+	}, [blockedTimes.length])
 
 	useEffect(() => {
 		if (quizComplete) {
@@ -245,7 +244,6 @@ function Home() {
 					}
 				</div>
 			</section>
-
 			<section>
 				<div className='border-t-[4px] border-b-[4px] border-[#DEA52B] py-[45px]'>
 					<div className='center-wr flex items-center justify-center'>
@@ -264,7 +262,7 @@ function Home() {
 						<div className='w-[60%]'>
 							<h3 className='font-bold text-[16px] mb-[10px]'>Pick a Date & Time</h3>
 							<div className=' flex items-center'>
-								<DatePicker
+								{/* <DatePicker
 									className='w-full border-[1px] border-[rgba(0,0,0,0.2)]'
 									format="YYYY-MM-DD HH:mm:ss"
 									disabledDate={disabledDate}
@@ -273,11 +271,10 @@ function Home() {
 										defaultValue: dayjs('00:00:00', 'HH:mm:ss'),
 									}}
 									onChange={(date, datestring) => { setScheduledAt(date) }}
-								/>
+								/> */}
+								<DatePicker format="MM/dd/yyyy HH:mm aa" showMeridian shouldDisableDate={disabledDate} value={scheduledAt} onChange={(value, event) => { setScheduledAt(value) }} />
 							</div>
-							<div className='mt-[10px] mb-[5px] p-[5px] bg-sky-100 px-[15px]' >Confirm <span className='font-medium'>{`${daysOfWeek[new Date(scheduledAt).getDay()]}, ${new Date(scheduledAt).toLocaleString()} `}</span> as your scheduled appointment time?</div>
-
-							<Calendar cellRender={cellRenderer} value={dayjs(scheduledAt)} fullscreen />
+							<Calendar bordered renderCell={cellRenderer} />
 						</div>
 					</div>
 				</div>
@@ -334,11 +331,10 @@ function Home() {
 									values,
 									errors,
 									touched,
+									isSubmitting,
 									handleChange,
 									handleBlur,
 									handleSubmit,
-									isSubmitting,
-									dirty,
 									setFieldValue,
 								}) => (
 									<form className='grid grid-cols-6 gap-3 gap-y-8' onSubmit={handleSubmit}>
@@ -467,7 +463,43 @@ function Home() {
 												<p className='mt-[15px]'>Please enter your credit card details below to proceed with the payment securely.</p>
 
 												<div className='flex items-center justify-end'>
-													<HostedForm environment='SANDBOX' formHeaderText='Pay via Credit Card:' buttonText='Pay Now' paymentOptions={{ showCreditCard: true, showBankAccount: false }} buttonClassName='px-[30px] py-[12.5px] font-semibold border-2 border-black bg-[#DEA52B]' authData={authData} onSubmit={handleSubmit} />
+													<div className="row">
+														<div className="flex items-center justify-center">
+															{/* <AcceptHosted
+																formToken={formToken}
+																integration="iframe"
+																onTransactionResponse={(response) =>
+																	setResponse(JSON.stringify(response, null, 2) + '\n')
+																}
+																onCancel={() =>
+																	setResponse((prevState) => prevState + 'Cancelled!\n')
+																}
+																onSuccessfulSave={() =>
+																	setResponse((prevState) => prevState + 'Successful save!\n')
+																}
+																onResize={(w, h) =>
+																	setResponse(
+																		(prevState) =>
+																			prevState + `Received resize message to ${w} x ${h}!\n`
+																	)
+																}
+															>
+																<AcceptHosted.Button className="px-[30px] py-[12.5px] font-semibold border-2 border-black bg-[#DEA52B]">
+																	Pay Now
+																</AcceptHosted.Button>
+																<AcceptHosted.IFrameBackdrop />
+																<AcceptHosted.IFrameContainer>
+																	<AcceptHosted.IFrame />
+																</AcceptHosted.IFrameContainer>
+															</AcceptHosted> */}
+															<AcceptHosted formToken={formToken} integration="redirect">
+																Continue to Redirect
+															</AcceptHosted>
+														</div>
+														<div className="text-green-600">
+															<ResponseBlock response={response} />
+														</div>
+													</div>
 												</div>
 											</div>
 										</div>
