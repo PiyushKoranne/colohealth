@@ -2,14 +2,47 @@ import axios from 'axios';
 import React, { useEffect } from 'react'
 import { FaRegUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { Dropdown } from 'rsuite';
-import 'rsuite/Dropdown/styles/index.css';
+import { Dropdown } from 'antd';
+
 
 function Navbar() {
 	const navigate = useNavigate();
 	const at = localStorage.getItem("colo_H_accessToken");
 	const [isProvider, setIsProvider] = React.useState(false);
 	const [providerData, setProviderData] = React.useState({});
+
+	const items = [
+		{
+			label: 'About',
+			key: 'ABOUT',
+		},
+		{
+			label: 'View Settings',
+			key: 'VIEW SETTINGS',
+		},
+		{
+			label: 'Sign Out	',
+			key: 'SIGN OUT',
+		},
+	];
+
+	function onNavClick({ key }) {
+		switch (key) {
+			case "ABOUT":
+				console.log("About us nav event");
+				break;
+			case "VIEW SETTINGS":
+				console.log("View settings nav event");
+				break;
+			case "SIGN OUT":
+				console.log("Signing out");
+				localStorage.removeItem("colo_H_accessToken");
+				localStorage.removeItem("colo_H_providerData");
+				navigate("/");
+				break;
+		}
+	} 
+
 
 	async function verifyAccessToken() {
 		try {
@@ -28,22 +61,7 @@ function Navbar() {
 		}
 	}
 
-	function navEvent(key) {
-		switch(key){
-			case "ABOUT":
-				console.log("About us nav event");
-				break;
-			case "VIEW SETTINGS":
-				console.log("View settings nav event");
-				break;
-			case "SIGN OUT":
-				console.log("Signing out");
-				localStorage.removeItem("colo_H_accessToken");
-				localStorage.removeItem("colo_H_providerData");
-				navigate("/");
-				break;
-		}
-	}
+	
 
 	useEffect(() => {
 		if (at) {
@@ -62,13 +80,14 @@ function Navbar() {
 						<li className='uppercase text-slate-500 font-semibold text-[14px] cursor-pointer transition-all duration-300 border-b-[2px] border-b-transparent hover:border-b-slate-500'>home</li>
 						<li className='uppercase text-slate-500 font-semibold text-[14px] cursor-pointer transition-all duration-300 border-b-[2px] border-b-transparent hover:border-b-slate-500'>learn about Crc</li>
 						<li className='uppercase text-slate-500 font-semibold text-[14px] cursor-pointer transition-all duration-300 border-b-[2px] border-b-transparent hover:border-b-slate-500'>schedule your test</li>
-						<li className='uppercase text-slate-500 font-semibold text-[14px] cursor-pointer transition-all duration-300 border-b-[2px] border-b-transparent hover:border-b-slate-500' onClick={()=>{navigate("/provider-login")}}>clinician site</li>
+						<li className='uppercase text-slate-500 font-semibold text-[14px] cursor-pointer transition-all duration-300 border-b-[2px] border-b-transparent hover:border-b-slate-500' onClick={() => { navigate("/provider-login") }}>clinician site</li>
 						{isProvider && <li className='uppercase text-slate-500 font-semibold text-[14px] cursor-pointer pr-[10px]'>
-							<Dropdown onSelect={(key, event)=>{navEvent(event.target.innerText)}} title={<FaRegUser size={17} />} trigger={['click', 'hover']} >
-								<Dropdown.Item>About</Dropdown.Item>
-								<Dropdown.Item>View Settings</Dropdown.Item>
-								<Dropdown.Item>Sign Out</Dropdown.Item>
-							</Dropdown>
+							<Dropdown
+								menu={{
+									items,
+									onNavClick,
+								}}
+							><FaRegUser /></Dropdown>
 						</li>}
 					</ul>
 				</div>

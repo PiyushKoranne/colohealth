@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from './common/Navbar'
 import Footer from './common/Footer'
-import {  Checkbox, Radio, Badge } from 'antd';
-import { Calendar, DatePicker } from 'rsuite';
-import 'rsuite/Calendar/styles/index.css';
-import 'rsuite/DatePicker/styles/index.css';
+import {  Checkbox, Radio, DatePicker, Calendar } from 'antd';
 import { Formik } from 'formik';
 import { AcceptHosted, HostedForm } from 'react-acceptjs';
 import axios from 'axios';
@@ -262,7 +259,7 @@ function Home() {
 						<div className='w-[60%]'>
 							<h3 className='font-bold text-[16px] mb-[10px]'>Pick a Date & Time</h3>
 							<div className=' flex items-center'>
-								{/* <DatePicker
+								<DatePicker
 									className='w-full border-[1px] border-[rgba(0,0,0,0.2)]'
 									format="YYYY-MM-DD HH:mm:ss"
 									disabledDate={disabledDate}
@@ -271,10 +268,11 @@ function Home() {
 										defaultValue: dayjs('00:00:00', 'HH:mm:ss'),
 									}}
 									onChange={(date, datestring) => { setScheduledAt(date) }}
-								/> */}
-								<DatePicker format="MM/dd/yyyy HH:mm aa" showMeridian shouldDisableDate={disabledDate} value={scheduledAt} onChange={(value, event) => { setScheduledAt(value) }} />
+								/>
+								{/* <DatePicker format="MM/dd/yyyy HH:mm aa" showMeridian shouldDisableDate={disabledDate} value={scheduledAt} onChange={(value, event) => { setScheduledAt(value) }} /> */}
 							</div>
-							<Calendar bordered renderCell={cellRenderer} />
+
+							<Calendar fullscreen cellRender={cellRenderer} />
 						</div>
 					</div>
 				</div>

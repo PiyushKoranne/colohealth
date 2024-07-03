@@ -1,9 +1,4 @@
 import React from 'react'
-import { Input, InputGroup } from 'rsuite'
-import AvatarIcon from '@rsuite/icons/legacy/Avatar';
-import EyeIcon from '@rsuite/icons/legacy/Eye';
-import EyeSlashIcon from '@rsuite/icons/legacy/EyeSlash';
-import 'rsuite/Checkbox/styles/index.css';
 import { ColorRing } from 'react-loader-spinner';
 import { Formik } from 'formik';
 import { Checkbox } from 'antd';

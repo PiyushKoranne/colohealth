@@ -3,16 +3,14 @@ import Navbar from './common/Navbar'
 import Footer from './common/Footer'
 import { Formik } from 'formik'
 import { Checkbox, Radio } from 'antd'
-import { Table } from 'rsuite'
-import 'rsuite/Table/styles/index.css'
 import { ColorRing } from 'react-loader-spinner'
 import toast, { Toaster } from 'react-hot-toast'
 import axios from 'axios'
 
 
-const { Column, HeaderCell, Cell } = Table;
-const CompactCell = props => <Cell {...props} style={{ padding: 4 }} />;
-const CompactHeaderCell = props => <HeaderCell className='font-bold text-black text-[16px]' {...props} style={{ padding: 4 }} />;
+// const { Column, HeaderCell, Cell } = Table;
+// const CompactCell = props => <Cell {...props} style={{ padding: 4 }} />;
+// const CompactHeaderCell = props => <HeaderCell className='font-bold text-black text-[16px]' {...props} style={{ padding: 4 }} />;
 const defaultColumns = [
 	{
 		key: 'order_number',
@@ -297,7 +295,7 @@ const ProviderPage = () => {
 										<input type="text" name='search' placeholder='Search' className='w-full inline-block outline-none  border-none bg-transparent' />
 									</div>
 
-									<Table
+									{/* <Table
 										loading={loading}
 										height={300}
 										hover={hover}
@@ -319,7 +317,7 @@ const ProviderPage = () => {
 												</Column>
 											);
 										})}
-									</Table>
+									</Table> */}
 								</div>
 							) : tabber === "EDIT_ACCOUNT" ? (
 								<div className='col-span-3 py-[25px] px-[50px] pb-[50px]' >
