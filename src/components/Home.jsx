@@ -76,7 +76,7 @@ function Home() {
 
 
 	async function getFormToken() {
-		const response = await axios.get("http://192.168.16.36:4001/colo-pay");
+		const response = await axios.get("http://174.138.76.145/colo-pay");
 		if (response.status === 200) {
 			setFormToken(response.data.code.token);
 		}
@@ -85,7 +85,6 @@ function Home() {
 	function cellRenderer(value) {
 		return (
 			<div className='flex justify-center items-center flex-col gap-[10px]'>
-				{/* {blockedTimes.indexOf(new Date(value).toDateString()) !== -1 ? <img src="/book-new-30.png" alt="" /> : new Date(value).toDateString() === new Date(scheduledAt).toDateString() ? <img src="/pin-30.png" alt="" /> : null} */}
 				{blockedTimes.indexOf(new Date(value).toDateString()) !== -1 ? <div id='booked-calendar-item'>Booked</div> : new Date(value).toDateString() === new Date(scheduledAt).toDateString() ? <div className='text-[16px] mt-[20px]'>Selected</div> : null}
 			</div>
 		)
@@ -112,7 +111,7 @@ function Home() {
 
 	async function handleSubmitTestForm(setSubmitting, values) {
 		try {
-			const response = await axios.post("http://192.168.16.36:4001/register-new-test-data", { ...values, scheduledAt });
+			const response = await axios.post("http://174.138.76.145/register-new-test-data", { ...values, scheduledAt });
 			if (response.status === 200) {
 				setShowPaymentBlock(true);
 			} else {
@@ -126,10 +125,9 @@ function Home() {
 		}
 	}
 
-
 	async function getScheduledTimes() {
 		try {
-			const response = await axios.get("http://192.168.16.36:4001/get-scheduled-times");
+			const response = await axios.get("http://174.138.76.145/get-scheduled-times");
 			if (response.status === 200) {
 				setBlockedTimes(response.data.blockedTimes.map(item => new Date(item).toDateString()));
 			} else {
@@ -295,7 +293,7 @@ function Home() {
 					<div className='flex items-center justify-center w-full'>
 						<div className='w-[60%]'>
 							<Formik
-								initialValues={{ confirm: false, firstName: '', lastName: '', dob: '', streetAddress: "", city: '', state: '', zip: '', phone: '', email: '', race: 'American Indian', ethnicity: 'Hispanic/Latino' }}
+								initialValues={{ confirm: false, firstName: '', lastName: '', dob: '', gender: '', streetAddress: "", city: '', state: '', zip: '', phone: '', email: '', race: 'American Indian', ethnicity: 'Hispanic/Latino' }}
 								validate={values => {
 									const errors = {};
 									if (!values.email) {
@@ -309,6 +307,7 @@ function Home() {
 									if (!values.firstName) errors.firstName = "Please enter your first name";
 									if (!values.lastName) errors.lastName = "Please enter your last name";
 									if (!values.dob) errors.dob = "Please enter your DoB";
+									if (!values.gender) errors.gender = "Please enter your gender";
 									if (!values.streetAddress) errors.streetAddress = "Please enter your address";
 									if (!values.city) errors.city = "City is required";
 									if (!values.state) errors.state = "State is required";
@@ -399,6 +398,17 @@ function Home() {
 											{errors.dob && touched.dob && <span className='inline-block absolute top-[-26px] text-[17px] font-semibold left-[-0px] text-red-600'>{errors.dob}</span>}
 											<input type="text" onChange={handleChange} onBlur={handleBlur} value={values.dob} name='dob' placeholder='Birthday (mm/dd/yyyy)' className='inline-block outline-none w-full border-none bg-transparent' />
 										</div>
+										{/* Gender */}
+										<div style={{ backgroundColor: touched.gender && errors.gender ? "red" : "#e6e7e8" }} className='bg-[#E6E7E8] relative border-[1px] border-[#000] px-[30px] py-[15.5px] col-span-6'>
+											<p>Gender</p>
+											<div className='flex flex-wrap items-start mt-[10px] gap-[20px] gap-y-[30px]'>
+												<Radio.Group value={values.gender} onChange={handleChange} onBlur={handleBlur} size='large' name="gender" className='flex items-center justify-start gap-[20px] flex-wrap ' defaultValue={1}>
+													<Radio value={"Male"}>Male</Radio>
+													<Radio value={"Female"}>Female</Radio>
+													<Radio value={"Prefer Not To Say"}>Prefer Not To Say</Radio>
+												</Radio.Group>
+											</div>
+										</div>
 										{/* Race */}
 										<div style={{ backgroundColor: touched.race && errors.race ? "red" : "#e6e7e8" }} className='bg-[#E6E7E8] relative border-[1px] border-[#000] px-[30px] py-[15.5px] col-span-6'>
 											<p>Race</p>
@@ -412,16 +422,18 @@ function Home() {
 													<Radio value={"Native American"}>Native American</Radio>
 													<Radio value={"Pacific Islander"}>Pacific Islander</Radio>
 													<Radio value={"Other"}>Other</Radio>
+													<Radio value={"Prefer Not To Say"}>Prefer Not To Say</Radio>
 												</Radio.Group>
 											</div>
 										</div>
 										{/* Ethnicity */}
-										<div style={{ backgroundColor: touched.ethnicity && errors.race ? "red" : "#e6e7e8" }} className='bg-[#E6E7E8] relative border-[1px] border-[#000] px-[30px] py-[15.5px] col-span-6'>
+										<div style={{ backgroundColor: touched.ethnicity && errors.ethnicity ? "red" : "#e6e7e8" }} className='bg-[#E6E7E8] relative border-[1px] border-[#000] px-[30px] py-[15.5px] col-span-6'>
 											<p>Ethnicity</p>
 											<div className='flex flex-wrap items-start mt-[10px] gap-[20px] gap-y-[30px]'>
 												<Radio.Group value={values.ethnicity} onChange={handleChange} onBlur={handleBlur} size='large' name="ethnicity" className='flex items-center justify-start gap-[20px] flex-wrap ' defaultValue={1}>
 													<Radio value={"Hispanic/Latino"}>Hispanic / Latino</Radio>
 													<Radio value={"Not Hispanic/Latino"}>Not Hispanic / Latino</Radio>
+													<Radio value={"Prefer Not To Say"}>Prefer Not To Say</Radio>
 												</Radio.Group>
 											</div>
 										</div>
@@ -463,36 +475,7 @@ function Home() {
 												<div className='flex items-center justify-end'>
 													<div className="row">
 														<div className="flex items-center justify-center">
-															{/* <AcceptHosted
-																formToken={formToken}
-																integration="iframe"
-																onTransactionResponse={(response) =>
-																	setResponse(JSON.stringify(response, null, 2) + '\n')
-																}
-																onCancel={() =>
-																	setResponse((prevState) => prevState + 'Cancelled!\n')
-																}
-																onSuccessfulSave={() =>
-																	setResponse((prevState) => prevState + 'Successful save!\n')
-																}
-																onResize={(w, h) =>
-																	setResponse(
-																		(prevState) =>
-																			prevState + `Received resize message to ${w} x ${h}!\n`
-																	)
-																}
-															>
-																<AcceptHosted.Button className="px-[30px] py-[12.5px] font-semibold border-2 border-black bg-[#DEA52B]">
-																	Pay Now
-																</AcceptHosted.Button>
-																<AcceptHosted.IFrameBackdrop />
-																<AcceptHosted.IFrameContainer>
-																	<AcceptHosted.IFrame />
-																</AcceptHosted.IFrameContainer>
-															</AcceptHosted> */}
-															<AcceptHosted formToken={formToken} integration="redirect">
-																Continue to Redirect
-															</AcceptHosted>
+															
 														</div>
 														<div className="text-green-600">
 															<ResponseBlock response={response} />
@@ -508,8 +491,6 @@ function Home() {
 					</div>
 				</div>
 			</section>
-
-
 			<Footer />
 		</>
 	)

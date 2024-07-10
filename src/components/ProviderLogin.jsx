@@ -21,7 +21,7 @@ const ProviderLogin = () => {
 	async function handleLogin(values, setSubmitting) {
 		try {
 			await sleep(2000);
-			const response = await axios.post("http://192.168.16.36:4001/provider-login", {...values});
+			const response = await axios.post("http://174.138.76.145/provider-login", {...values});
 			if(response.status === 200) {
 				localStorage.setItem("colo_H_accessToken", response.data.data.accessToken);
 				localStorage.setItem("colo_H_providerData", JSON.stringify(response.data.data));

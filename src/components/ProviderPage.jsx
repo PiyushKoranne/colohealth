@@ -36,8 +36,6 @@ const defaultColumns = [
 ];
 
 const ProviderPage = () => {
-
-
 	const [tabber, setTabber] = useState('NEW_ORDER');
 	function printBlankRequisition() {
 		const pdfUrl = `${window.location.origin}/colohealth-rec-form-provider.pdf`;
@@ -46,8 +44,8 @@ const ProviderPage = () => {
 
 	async function handlePasswordChange(values) {
 		try {
-			const response = await axios.post("http://192.168.16.36:4001/password-reset", {...values, accessToken: localStorage.getItem('colo_H_accessToken')});
-			if(response.status === 200){
+			const response = await axios.post("http://174.138.76.145/password-reset", { ...values, accessToken: localStorage.getItem('colo_H_accessToken') });
+			if (response.status === 200) {
 				toast.success("Password reset successfully!")
 			}
 		} catch (error) {
@@ -75,9 +73,13 @@ const ProviderPage = () => {
 								<div className='col-span-3 py-[25px] px-[50px]' >
 									<h1 className='text-[40px] text-center uppercase'>View Patient orders</h1>
 									<p className='mt-[40px] text-[18px]'>Search Patients by entering name, DOB or Order Number</p>
-									<div style={{ backgroundColor: "#e6e7e8" }} className='bg-[#E6E7E8] relative border-[1px] border-[#000] px-[30px] py-[12.5px] w-[40%] mt-[20px] mb-[30px]'>
-										<input type="text" name='search' placeholder='Search' className='w-full inline-block outline-none  border-none bg-transparent' />
+									<div className='flex items-center gap-[10px] mt-[20px] mb-[30px]'>
+										<div className='bg-[#E6E7E8] relative border-[1px] border-[#000] px-[30px] py-[12.5px] w-[50%] '>
+											<input type="text" name='search' placeholder='Search' className='w-full inline-block outline-none  border-none bg-transparent' />
+										</div>
+										<button className='w-[150px] px-[30px] py-[13.6px] text-[18px] hover:bg-black hover:text-white transition-all duration-300 bg-[#DEA52B] capitalize' >Search</button>
 									</div>
+									
 								</div>
 							) : tabber === "EDIT_ACCOUNT" ? (
 								<EditAccount handlePasswordChange={handlePasswordChange} />
@@ -97,4 +99,4 @@ const ProviderPage = () => {
 	)
 }
 
-export default ProviderPage
+export default ProviderPage;

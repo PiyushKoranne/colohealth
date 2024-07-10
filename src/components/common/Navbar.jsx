@@ -46,7 +46,7 @@ function Navbar() {
 
 	async function verifyAccessToken() {
 		try {
-			const response = await axios.post("http://192.168.16.36:4001/verify", { accessToken: at });
+			const response = await axios.post("http://174.138.76.145/verify", { accessToken: at });
 			if (response.status === 200) {
 				setIsProvider(true);
 				setProviderData(JSON.parse(localStorage.getItem("colo_H_providerData")))
