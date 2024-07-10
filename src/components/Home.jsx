@@ -11,6 +11,7 @@ import { LuClock4 } from 'react-icons/lu';
 import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import ResponseBlock from './ResponseBlock';
+import { InlineWidget } from "react-calendly";
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 
@@ -254,10 +255,11 @@ function Home() {
 
 				<div className=' center-wr flex flex-col items-center justify-center pt-[50px] pb-[150px]'>
 					<div className='flex items-center justify-center w-full'>
-						<div className='w-[60%]'>
+						<div className='w-[100%]'>
 							<h3 className='font-bold text-[16px] mb-[10px]'>Pick a Date & Time</h3>
-							<div className=' flex items-center'>
-								<DatePicker
+							<div className=' flex items-center w-full h-[700px]'>
+								<InlineWidget styles={{width:"100%", height:"100%"}} url="https://calendly.com/newdaydiagnostics/colohealth-blood-draw?preview_source=et_card&month=2024-07&date=2024-07-12" />
+								{/* <DatePicker
 									className='w-full border-[1px] border-[rgba(0,0,0,0.2)]'
 									format="YYYY-MM-DD HH:mm:ss"
 									disabledDate={disabledDate}
@@ -266,11 +268,11 @@ function Home() {
 										defaultValue: dayjs('00:00:00', 'HH:mm:ss'),
 									}}
 									onChange={(date, datestring) => { setScheduledAt(date) }}
-								/>
+								/> */}
 								{/* <DatePicker format="MM/dd/yyyy HH:mm aa" showMeridian shouldDisableDate={disabledDate} value={scheduledAt} onChange={(value, event) => { setScheduledAt(value) }} /> */}
 							</div>
 
-							<Calendar fullscreen cellRender={cellRenderer} />
+							{/* <Calendar fullscreen cellRender={cellRenderer} /> */}
 						</div>
 					</div>
 				</div>

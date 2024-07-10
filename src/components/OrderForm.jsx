@@ -6,7 +6,7 @@ function OrderForm() {
 	return (
 		<Formik
 
-					initialValues={{ confirm: false, firstName: '', lastName: '', dob: '', streetAddress: "", city: '', state: '', zip: '', phone: '', email: '', race: 'American Indian', ethnicity: 'Hispanic/Latino' }}
+					initialValues={{ confirm: false, firstName: '', lastName: '', dob: '', gender:"", streetAddress: "", city: '', state: '', zip: '', phone: '', email: '', race: 'American Indian', ethnicity: 'Hispanic/Latino' }}
 					validate={values => {
 						const errors = {};
 						if (!values.email) {
@@ -110,6 +110,17 @@ function OrderForm() {
 								{errors.dob && touched.dob && <span className='inline-block absolute top-[-26px] text-[17px] font-semibold left-[-0px] text-red-600'>{errors.dob}</span>}
 								<input type="text" onChange={handleChange} onBlur={handleBlur} value={values.dob} name='dob' placeholder='Birthday (mm/dd/yyyy)' className='inline-block outline-none w-full border-none bg-transparent' />
 							</div>
+							{/* Gender */}
+							<div style={{ backgroundColor: touched.gender && errors.gender ? "red" : "#e6e7e8" }} className='bg-[#E6E7E8] relative border-[1px] border-[#000] px-[30px] py-[15.5px] col-span-6'>
+											<p>Gender</p>
+											<div className='flex flex-wrap items-start mt-[10px] gap-[20px] gap-y-[30px]'>
+												<Radio.Group value={values.gender} onChange={handleChange} onBlur={handleBlur} size='large' name="gender" className='flex items-center justify-start gap-[20px] flex-wrap ' defaultValue={1}>
+													<Radio value={"Male"}>Male</Radio>
+													<Radio value={"Female"}>Female</Radio>
+													<Radio value={"Prefer Not To Say"}>Prefer Not To Say</Radio>
+												</Radio.Group>
+											</div>
+										</div>
 							{/* Race */}
 							<div style={{ backgroundColor: touched.race && errors.race ? "red" : "#e6e7e8" }} className='bg-[#E6E7E8] relative border-[1px] border-[#000] px-[30px] py-[12.5px] col-span-6'>
 								<p>Race</p>
@@ -123,6 +134,7 @@ function OrderForm() {
 										<Radio value={"Native American"}>Native American</Radio>
 										<Radio value={"Pacific Islander"}>Pacific Islander</Radio>
 										<Radio value={"Other"}>Other</Radio>
+										<Radio value={"Prefer Not To Say"}>Prefer Not To Say</Radio>
 									</Radio.Group>
 								</div>
 							</div>
@@ -133,6 +145,7 @@ function OrderForm() {
 									<Radio.Group value={values.ethnicity} onChange={handleChange} onBlur={handleBlur} size='large' name="ethnicity" className='flex items-center justify-start gap-[20px] flex-wrap ' defaultValue={1}>
 										<Radio value={"Hispanic/Latino"}>Hispanic / Latino</Radio>
 										<Radio value={"Not Hispanic/Latino"}>Not Hispanic / Latino</Radio>
+										<Radio value={"Prefer Not To Say"}>Prefer Not To Say</Radio>
 									</Radio.Group>
 								</div>
 							</div>

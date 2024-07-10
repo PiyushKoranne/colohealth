@@ -5,6 +5,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import axios from 'axios'
 import EditAccount from './EditAccount'
 import NewOrder from './NewOrder'
+import { Pagination } from 'antd'
 
 const defaultColumns = [
 	{
@@ -79,7 +80,62 @@ const ProviderPage = () => {
 										</div>
 										<button className='w-[150px] px-[30px] py-[13.6px] text-[18px] hover:bg-black hover:text-white transition-all duration-300 bg-[#DEA52B] capitalize' >Search</button>
 									</div>
-									
+									<table className='border-[1px] border-slate-800 w-full'>
+										<thead>
+											<th>Order Number</th>
+											<th>First Name</th>
+											<th>Last Name</th>
+											<th>DOB</th>
+											<th>Requisition</th>
+										</thead>
+										<tbody>
+											<tr>
+												<td>NDD11500</td>
+												<td>Evan</td>
+												<td>Mckinsey</td>
+												<td>1/5/1954</td>
+												<td><a href="#" className='text-sky-600 underline'>download</a></td>
+											</tr>
+											<tr>
+												<td>NDD11501</td>
+												<td>Margeret</td>
+												<td>Flannigan</td>
+												<td>12/7/1961</td>
+												<td><a href="#" className='text-sky-600 underline'>download</a></td>
+											</tr>
+											<tr>
+												<td>NDD11502</td>
+												<td>Bob</td>
+												<td>Adams</td>
+												<td>5/14/1962</td>
+												<td><a href="#" className='text-sky-600 underline'>download</a></td>
+											</tr>
+											<tr>
+												<td>NDD11503</td>
+												<td>Mary</td>
+												<td>Lee</td>
+												<td>9/10/1957</td>
+												<td><a href="#" className='text-sky-600 underline'>download</a></td>
+											</tr>
+											<tr>
+												<td>NDD11504</td>
+												<td>Anthony</td>
+												<td>Dwight</td>
+												<td>11/16/1948</td>
+												<td><a href="#" className='text-sky-600 underline'>download</a></td>
+											</tr>
+											<tr>
+												<td>NDD11505</td>
+												<td>George</td>
+												<td>Ripon</td>
+												<td>9/22/1953</td>
+												<td><a href="#" className='text-sky-600 underline'>download</a></td>
+											</tr>
+										</tbody>
+									</table>
+									<div className='mt-[20px] flex items-center justify-end'>
+										<Pagination defaultCurrent={1} total={500} />
+									</div>
 								</div>
 							) : tabber === "EDIT_ACCOUNT" ? (
 								<EditAccount handlePasswordChange={handlePasswordChange} />
