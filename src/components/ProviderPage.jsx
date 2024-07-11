@@ -80,7 +80,7 @@ const ProviderPage = () => {
 										</div>
 										<button className='w-[150px] px-[30px] py-[13.6px] text-[18px] hover:bg-black hover:text-white transition-all duration-300 bg-[#DEA52B] capitalize' >Search</button>
 									</div>
-									<table className='border-[1px] border-slate-800 w-full'>
+									<table className='provider-client-table border-[1px] border-slate-800 w-full'>
 										<thead>
 											<th>Order Number</th>
 											<th>First Name</th>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from './common/Navbar'
 import Footer from './common/Footer'
-import {  Checkbox, Radio, DatePicker, Calendar } from 'antd';
+import { Checkbox, Radio, DatePicker, Calendar } from 'antd';
 import { Formik } from 'formik';
 import { AcceptHosted, HostedForm } from 'react-acceptjs';
 import axios from 'axios';
@@ -11,12 +11,20 @@ import { LuClock4 } from 'react-icons/lu';
 import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import ResponseBlock from './ResponseBlock';
-import { InlineWidget } from "react-calendly";
+import { InlineWidget, useCalendlyEventListener } from "react-calendly";
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 
 function Home() {
 	const navigate = useNavigate();
+	useCalendlyEventListener({
+		onProfilePageViewed: () => console.log("onProfilePageViewed"),
+		onDateAndTimeSelected: () => console.log("onDateAndTimeSelected"),
+		onEventTypeViewed: () => console.log("onEventTypeViewed"),
+		onEventScheduled: (e) => console.log(e.data.payload),
+		onPageHeightResize: (e) => console.log(e.data.payload.height),
+	});
+
 
 	const authData = {
 		apiLoginID: '5KP3u95bQpv',
@@ -24,12 +32,51 @@ function Home() {
 	};
 
 
-	
+
 	const disabledDate = (current) => {
+		console.log('current date type', typeof current);
 		// Can not select days before today and weekends
-		return current && (current < dayjs().startOf('day') || current.getDay() === 0 || current.getDay() === 6);
+		return current && (current < dayjs().startOf('day') || current.toDate().getDate() === 0 || current.toDate().getDay() === 6);
 	};
 
+	const times = [
+		'8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
+		'11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM',
+		'2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM',
+		'5:00 PM'
+	];
+
+
+	// Generate time options for half-hour intervals from 8 AM to 5 PM
+	const generateTimeOptions = () => {
+		const options = [];
+		for (let hour = 8; hour <= 16; hour++) {
+			options.push({ hour, minute: 0 });
+			options.push({ hour, minute: 30 });
+		}
+		return options;
+	};
+
+	const timeOptions = generateTimeOptions();
+
+	const disabledDateTime = () => {
+		const disabledHours = () => {
+			const hours = Array.from({ length: 24 }, (_, index) => index);
+			return hours.filter(hour => hour < 8 || hour > 16);
+		};
+
+		const disabledMinutes = (selectedHour) => {
+			if (selectedHour < 8 || selectedHour > 16) {
+				return Array.from({ length: 60 }, (_, index) => index);
+			}
+			return Array.from({ length: 60 }, (_, index) => index).filter(minute => minute !== 0 && minute !== 30);
+		};
+
+		return {
+			disabledHours,
+			disabledMinutes,
+		};
+	};
 
 	const [preRegistrationForm, setPreRegistrationForm] = useState([
 		{
@@ -67,6 +114,7 @@ function Home() {
 	const [showPaymentBlock, setShowPaymentBlock] = useState(false);
 	const [blockedTimes, setBlockedTimes] = useState([]);
 	const [response, setResponse] = React.useState('');
+	const [chosenTimeSlot, setChosenTimeSlot] = useState('');
 
 
 	function reAttemptTest() {
@@ -112,9 +160,11 @@ function Home() {
 
 	async function handleSubmitTestForm(setSubmitting, values) {
 		try {
-			const response = await axios.post("http://174.138.76.145/register-new-test-data", { ...values, scheduledAt });
+			const response = await axios.post("http://174.138.76.145/register-new-test-data", { ...values, scheduledAt: scheduledAt.toString() });
 			if (response.status === 200) {
 				setShowPaymentBlock(true);
+				console.log("REGISTRATION RESPONSE :", response);
+				setFormToken(response.data.code);
 			} else {
 				toast.error("Failed to register", { style: { backgroundColor: "#101010", color: "white" } });
 				console.log('not ok', response);
@@ -139,9 +189,25 @@ function Home() {
 		}
 	}
 
+	const handleButtonClick = (time) => {
+		setChosenTimeSlot(time);
+		const [hourString, minuteString, period] = time.split(/[:\s]/);
+		let hour = parseInt(hourString, 10);
+		const minute = parseInt(minuteString, 10);
+		if (period === 'PM' && hour !== 12) hour += 12;
+		if (period === 'AM' && hour === 12) hour = 0;
+
+		const newDate = new Date(scheduledAt);
+		newDate.setHours(hour, minute, 0, 0);
+		setScheduledAt(newDate);
+	};
+
 	useEffect(() => {
 		getScheduledTimes();
 	}, [blockedTimes.length])
+
+	console.log("#############", scheduledAt.toString());
+
 
 	useEffect(() => {
 		if (quizComplete) {
@@ -157,7 +223,7 @@ function Home() {
 	}, [quizComplete])
 
 	useEffect(() => {
-		getFormToken();
+		// getFormToken();
 	}, [])
 
 
@@ -255,24 +321,25 @@ function Home() {
 
 				<div className=' center-wr flex flex-col items-center justify-center pt-[50px] pb-[150px]'>
 					<div className='flex items-center justify-center w-full'>
-						<div className='w-[100%]'>
+						<div className='w-[75%]'>
 							<h3 className='font-bold text-[16px] mb-[10px]'>Pick a Date & Time</h3>
-							<div className=' flex items-center w-full h-[700px]'>
-								<InlineWidget styles={{width:"100%", height:"100%"}} url="https://calendly.com/newdaydiagnostics/colohealth-blood-draw?preview_source=et_card&month=2024-07&date=2024-07-12" />
-								{/* <DatePicker
-									className='w-full border-[1px] border-[rgba(0,0,0,0.2)]'
-									format="YYYY-MM-DD HH:mm:ss"
-									disabledDate={disabledDate}
-									// disabledTime={disabledDateTime}
-									showTime={{
-										defaultValue: dayjs('00:00:00', 'HH:mm:ss'),
-									}}
-									onChange={(date, datestring) => { setScheduledAt(date) }}
-								/> */}
-								{/* <DatePicker format="MM/dd/yyyy HH:mm aa" showMeridian shouldDisableDate={disabledDate} value={scheduledAt} onChange={(value, event) => { setScheduledAt(value) }} /> */}
-							</div>
+							<div className=' flex items-start w-full border-[1px] border-[rgba(0,0,0,0.4)]'>
+								<div className='flex flex-col p-[25px] w-[30%]'>
+									<h3 className='text-[24px] font-semibold mt-[50px]'>ColoHealth Blood Draw</h3>
+									<p>Pick a date and time for the appointment</p>
+								</div>
+								<div className='p-[25px] w-[70%] flex'>
+									<Calendar disabledDate={disabledDate} onSelect={(date) => { setScheduledAt(date.toDate()) }} className='w-[60%]' fullscreen={false} />
+									<div className='w-[40%] flex flex-col py-[30px] items-center justify-start gap-[20px] h-[400px] overflow-y-scroll shadow-inset-bottom'>
+										{times.map((time, index) => (
+											<button style={{backgroundColor: chosenTimeSlot === time ? '#484848':'', color: chosenTimeSlot === time ? '#fff':''}} className='hover:bg-blue-700 hover:text-white transition-all duration-300 border-2 border-blue-700 text-blue-700 font-semibold py-[5px] px-[30px]' key={index} onClick={() => handleButtonClick(time)}>
+												{time}
+											</button>
+										))}
 
-							{/* <Calendar fullscreen cellRender={cellRenderer} /> */}
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -476,8 +543,10 @@ function Home() {
 
 												<div className='flex items-center justify-end'>
 													<div className="row">
-														<div className="flex items-center justify-center">
-															
+														<div className="flex items-center justify-center border-2 border-slate-900 font-semibold bg-[#DEA52B] mt-[20px] py-[10px] px-[30px]">
+															<AcceptHosted formToken={formToken} key={'colohealth-redr-110724'} integration="redirect">
+																Make Payment
+															</AcceptHosted>
 														</div>
 														<div className="text-green-600">
 															<ResponseBlock response={response} />
